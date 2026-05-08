@@ -51,7 +51,7 @@
 }
 
 #root {
-  width: 1126px;
+  width: 100%;
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
@@ -110,13 +110,15 @@ code {
   background: var(--code-bg);
 }
 
+
 @import "tailwindcss";
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background: #fff7ed;
+  background: #070707;
   font-family: Inter, system-ui, sans-serif;
 }
