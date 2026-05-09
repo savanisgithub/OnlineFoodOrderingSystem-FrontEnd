@@ -35,7 +35,7 @@ function SignInPage() {
         try {
             setLoading(true);
             await login({ email, password });
-            navigate("/foods");
+            navigate("/");
         } catch (error) {
             const err = error as AxiosError<{ message?: string }>;
             setFormError(err.response?.data?.message || "Invalid email or password");

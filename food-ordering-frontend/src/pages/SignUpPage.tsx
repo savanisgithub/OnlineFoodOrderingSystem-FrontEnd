@@ -40,7 +40,7 @@ function SignUpPage() {
         try {
             setLoading(true);
             await register({ name, email, password, role });
-            navigate("/foods");
+            navigate("/signin");
         } catch (error) {
             const err = error as AxiosError<{ message?: string }>;
             setFormError(err.response?.data?.message || "Registration failed");
