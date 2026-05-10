@@ -5,6 +5,7 @@ import { cartApi } from "../../api/cartApi";
 import type { CartItem } from "../../types";
 import Button from "../ui/Button";
 import { useNavigate } from "react-router-dom";
+import FoodImage from "../ui/FoodImage";
 
 interface CartModalProps {
     isOpen: boolean;
@@ -151,10 +152,11 @@ export default function CartModal({ isOpen, onClose, userId, onCartUpdate }: Car
                                     key={item.cartItemId}
                                     className="flex gap-3 rounded-2xl border border-orange-100 p-3 bg-orange-50"
                                 >
-                                    {/* Product Image Placeholder */}
-                                    <div className="w-20 h-20 bg-slate-300 rounded-lg flex-shrink-0 flex items-center justify-center text-white text-xs text-center font-bold">
-                                        {item.food?.foodName?.substring(0, 3) || item.foodName?.substring(0, 3)}
-                                    </div>
+                                    <FoodImage
+                                        imageUrl={item.imageUrl || item.food?.imageUrl}
+                                        alt={item.food?.foodName || item.foodName}
+                                        className="h-20 w-20 flex-shrink-0 rounded-lg border border-orange-100"
+                                    />
 
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-bold text-slate-800 text-sm truncate">

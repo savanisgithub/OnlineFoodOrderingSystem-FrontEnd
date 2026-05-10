@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import Button from "../components/ui/Button";
 import EmptyState from "../components/ui/EmptyState";
 import StatusBadge from "../components/ui/StatusBadge";
+import FoodImage from "../components/ui/FoodImage";
 
 function OrdersPage() {
     const { user, isAdmin } = useAuth();
@@ -119,11 +120,11 @@ function OrdersPage() {
                                             className="flex gap-4 py-4 first:pt-0 last:pb-0"
                                         >
                                             {/* Item Image */}
-                                            <div className="flex-shrink-0">
-                                                <div className="h-20 w-20 rounded-lg bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center text-2xl border border-orange-100">
-                                                    🍽️
-                                                </div>
-                                            </div>
+                                            <FoodImage
+                                                imageUrl={item.imageUrl}
+                                                alt={item.foodName}
+                                                className="h-20 w-20 flex-shrink-0 rounded-lg border border-orange-100"
+                                            />
 
                                             {/* Item Details */}
                                             <div className="flex-1 min-w-0 text-left">

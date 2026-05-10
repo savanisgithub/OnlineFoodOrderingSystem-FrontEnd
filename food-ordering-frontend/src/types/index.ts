@@ -23,6 +23,7 @@ export interface CartItem {
     cartItemId: string;
     foodId: string;
     foodName: string;
+    imageUrl?: string;
     quantity: number;
     unitPrice: number;
     totalPrice: number;
@@ -41,6 +42,7 @@ export interface OrderItem {
     orderItemId: string;
     foodId: string;
     foodName: string;
+    imageUrl?: string;
     quantity: number;
     unitPrice: number;
     totalPrice: number;

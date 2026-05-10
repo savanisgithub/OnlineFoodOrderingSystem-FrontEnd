@@ -192,19 +192,16 @@ function FoodsPage() {
                                             <h3 className="text-lg font-black text-slate-950">
                                                 {food.foodName}
                                             </h3>
-                                            <p className="mt-1 text-sm text-slate-500">
-                                                {food.categoryName || "Food Item"}
-                                            </p>
                                         </div>
 
                                         <StatusBadge status={food.status} />
                                     </div>
 
-                                    <p className="min-h-[48px] text-sm leading-6 text-slate-500">
+                                    <p className="min-h-[40px] text-sm leading-6 text-slate-500">
                                         {food.description || "Delicious food prepared with care."}
                                     </p>
 
-                                    <div className="mt-5 flex items-center justify-between">
+                                    <div className="mt-2 flex items-center justify-between">
                                         <p className="text-2xl font-black text-orange-600">
                                             LKR {food.price.toLocaleString()}
                                         </p>

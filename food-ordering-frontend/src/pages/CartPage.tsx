@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import Button from "../components/ui/Button";
 import EmptyState from "../components/ui/EmptyState";
 import { useCart } from "../context/CartContext";
+import FoodImage from "../components/ui/FoodImage";
 
 function CartPage() {
     const { user } = useAuth();
@@ -28,6 +29,7 @@ function CartPage() {
             setError("");
 
             const data = await cartApi.getByUser(user.userId);
+            console.log("Cart data:", data);
             setCart(data);
             await refreshCartCount(user.userId);
         } catch {
@@ -145,9 +147,11 @@ function CartPage() {
                                     className="flex flex-col gap-4 rounded-[2rem] border border-orange-100 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className="grid h-20 w-20 place-items-center rounded-3xl bg-orange-100 text-4xl">
-                                            🍽️
-                                        </div>
+                                        <FoodImage
+                                            imageUrl={item.imageUrl || item.food?.imageUrl}
+                                            alt={item.foodName}
+                                            className="h-20 w-20 flex-shrink-0 rounded-3xl border border-orange-100"
+                                        />
 
                                         <div>
                                             <h3 className="text-lg font-black text-slate-950">
