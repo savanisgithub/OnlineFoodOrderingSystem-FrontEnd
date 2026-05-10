@@ -25,6 +25,7 @@ export interface CartItem {
     quantity: number;
     unitPrice: number;
     totalPrice: number;
+    food?: FoodItem;
 }
 
 export interface Cart {

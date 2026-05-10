@@ -6,12 +6,14 @@ import { categoryApi } from "../api/categoryApi";
 import { cartApi } from "../api/cartApi";
 import type { Category, FoodItem } from "../types";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import Button from "../components/ui/Button";
 import StatusBadge from "../components/ui/StatusBadge";
 import EmptyState from "../components/ui/EmptyState";
 
 function FoodsPage() {
     const { user, isAuthenticated } = useAuth();
+    const { refreshCartCount } = useCart();
 
     const [foods, setFoods] = useState<FoodItem[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -79,6 +81,7 @@ function FoodsPage() {
         try {
             setActionLoading(food.foodId);
             await cartApi.addItem(user.userId, food.foodId, 1);
+            await refreshCartCount(user.userId);
             setSuccess(`${food.foodName} added to cart`);
         } catch (error) {
             const err = error as AxiosError<{ message?: string }>;
