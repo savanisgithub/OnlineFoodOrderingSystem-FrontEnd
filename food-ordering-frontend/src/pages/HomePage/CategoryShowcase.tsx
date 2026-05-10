@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { categoryApi } from "../../api/categoryApi";
+import { foodApi } from "../../api/foodApi";
 import type { Category } from "../../types";
 
 const categoryIcons = ["🍔", "🍕", "🍛", "🍝", "🥗", "🍰", "🍟", "🥤"];
@@ -15,8 +16,20 @@ function CategoryShowcase() {
             setLoading(true);
             setError("");
 
-            const data = await categoryApi.getAll();
-            setCategories(data);
+            const [categoryData, availableFoods] = await Promise.all([
+                categoryApi.getAll(),
+                foodApi.getAvailable(),
+            ]);
+
+            const availableCategoryIds = new Set(
+                availableFoods.map((food) => food.categoryId)
+            );
+
+            setCategories(
+                categoryData.filter((category) =>
+                    availableCategoryIds.has(category.categoryId)
+                )
+            );
         } catch {
             setError("Unable to load categories.");
         } finally {
@@ -68,11 +81,11 @@ function CategoryShowcase() {
                 ) : categories.length === 0 ? (
                     <div className="rounded-[2rem] border border-orange-100 bg-orange-50/50 p-10 text-center">
                         <h3 className="text-xl font-black text-slate-950">
-                            No categories available
+                            No available categories
                         </h3>
 
                         <p className="mt-2 text-sm text-slate-500">
-                            Categories added by admin will appear here.
+                            Categories will appear here when they have available foods.
                         </p>
                     </div>
                 ) : (
