@@ -4,7 +4,7 @@ import { categoryApi } from "../../api/categoryApi";
 import { foodApi } from "../../api/foodApi";
 import type { Category } from "../../types";
 
-const categoryIcons = ["🍔", "🍕", "🍛", "🍝", "🥗", "🍰", "🍟", "🥤"];
+const categoryIcons = ["🥗", "🍕","🍔", "🍛", "🍝", , "🍰", "🍟", "🥤"];
 
 function CategoryShowcase() {
     const [categories, setCategories] = useState<Category[]>([]);
