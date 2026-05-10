@@ -17,7 +17,7 @@ function AdminLayout({ title, subtitle, children }: AdminLayoutProps) {
         }`;
 
     return (
-        <main className="min-h-screen bg-orange-50/15 px-4 py-8">
+        <main className="min-h-screen bg-orange-50/15 px-4 py-2">
             <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[280px_1fr]">
                 <aside className="h-fit rounded-[2rem] border border-orange-100 bg-white p-4 shadow-sm lg:sticky lg:top-28">
                     <div className="mb-5 rounded-3xl bg-gradient-to-br from-orange-600 to-yellow-400 p-5 text-white">
@@ -48,7 +48,7 @@ function AdminLayout({ title, subtitle, children }: AdminLayoutProps) {
                     </nav>
 
                     <Link
-                        to="/foods"
+                        to="/"
                         className="mt-5 block rounded-2xl border border-orange-100 px-4 py-3 text-center text-sm font-bold text-slate-600 hover:bg-orange-50"
                     >
                         View Storefront
@@ -56,12 +56,11 @@ function AdminLayout({ title, subtitle, children }: AdminLayoutProps) {
                 </aside>
 
                 <section>
-                    <div className="mb-6 rounded-[2rem] border border-orange-100 bg-white p-6 shadow-sm">
-                        <p className="text-sm font-bold text-orange-600">Administration</p>
-                        <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">
+                    <div className="mb-3">
+                        <h1 className="text-3xl font-weight tracking-tight text-slate-950 md:text-4xl">
                             {title}
                         </h1>
-                        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                        <p className="mt-2 text-sm text-middle leading-6 text-slate-550">
                             {subtitle}
                         </p>
                     </div>
