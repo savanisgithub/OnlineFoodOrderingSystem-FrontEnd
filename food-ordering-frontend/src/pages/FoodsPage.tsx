@@ -96,7 +96,7 @@ function FoodsPage() {
             <div className="mx-auto max-w-7xl">
                 <div className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end">
                     <div>
-                        <p className="mt-3 max-w-2xl text-slate-500">
+                        <p className="mt-3 max-w-2xl !text-slate-500">
                             Browse foods by category, search your favorites, and add items to your cart.
                         </p>
                     </div>

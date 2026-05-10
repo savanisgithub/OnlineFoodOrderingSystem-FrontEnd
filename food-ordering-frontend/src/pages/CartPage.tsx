@@ -90,7 +90,7 @@ function CartPage() {
         <main className="min-h-screen px-4">
             <div className="mx-auto max-w-6xl">
                 <div className="mb-8">
-                    <h1 className="mt-2 text-sm font-medium !text-slate-300">
+                    <h1 className="text-sm font-medium !text-slate-500">
                         Review your selected meals
                     </h1>
                 </div>
