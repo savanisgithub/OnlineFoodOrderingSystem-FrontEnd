@@ -74,10 +74,6 @@ function Navbar() {
               <NavLink to="/orders" className={navClass}>
                 Orders
               </NavLink>
-
-              <NavLink to="/payments" className={navClass}>
-                Payments
-              </NavLink>
             </>
           )}
 
@@ -97,11 +93,10 @@ function Navbar() {
                   setCartModalOpen(true);
                   setMobileOpen(false);
                 }}
-                className={`flex items-center gap-3 rounded-xl px-4 py-3 relative transition ${
-                  cartModalOpen
-                    ? "bg-orange-100"
-                    : "hover:bg-orange-50"
-                }`}
+                className={`flex items-center gap-3 rounded-xl px-4 py-3 relative transition ${cartModalOpen
+                  ? "bg-orange-100"
+                  : "hover:bg-orange-50"
+                  }`}
               >
                 <ShoppingCart size={25} />
                 <CartBadge count={cartCount} />
@@ -133,8 +128,8 @@ function Navbar() {
               <Link
                 to="/signin"
                 className={`text-sm font-semibold transition ${location.pathname === "/signin"
-                    ? "text-orange-600 border-b-2 border-orange-600 pb-1"
-                    : "text-slate-200 hover:text-orange-600"
+                  ? "text-orange-600 border-b-2 border-orange-600 pb-1"
+                  : "text-slate-200 hover:text-orange-600"
                   }`}
               >
                 Sign In
@@ -143,8 +138,8 @@ function Navbar() {
               <Link
                 to="/signup"
                 className={`rounded-full px-5 py-2 text-sm font-semibold transition ${location.pathname === "/signup"
-                    ? "bg-orange-600 text-white shadow-md shadow-orange-300"
-                    : "bg-orange-700 text-white shadow-md shadow-orange-200 hover:bg-orange-700"
+                  ? "bg-orange-600 text-white shadow-md shadow-orange-300"
+                  : "bg-orange-700 text-white shadow-md shadow-orange-200 hover:bg-orange-700"
                   }`}
               >
                 Sign Up
@@ -188,7 +183,7 @@ function Navbar() {
 
             {isAuthenticated && (
               <>
-              <Link
+                <Link
                   to="/cart"
                   className="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-orange-50"
                 >
@@ -206,18 +201,24 @@ function Navbar() {
                   to="/payments"
                   className="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-orange-50"
                 >
-                  Payments
+                  Payment History
                 </Link>
               </>
             )}
 
             {isAdmin && (
-              <Link
-                to="/admin"
-                className="rounded-xl px-4 py-3 hover:bg-orange-50"
-              >
-                Admin Dashboard
-              </Link>
+              <>
+                <Link
+                  to="/admin"
+                  className="rounded-xl px-4 py-3 hover:bg-orange-50"
+                >
+                  Admin Dashboard
+                </Link>
+
+                <NavLink to="/payments" className={navClass}>
+                  Payment History
+                </NavLink>
+              </>
             )}
 
             <div className="mt-3 border-t border-orange-100 pt-3">
@@ -233,8 +234,8 @@ function Navbar() {
                   <Link
                     to="/signin"
                     className={`rounded-xl py-3 text-center text-sm font-semibold transition ${location.pathname === "/signin"
-                        ? "bg-orange-100 text-orange-600 border border-orange-600"
-                        : "border border-orange-200 text-slate-700"
+                      ? "bg-orange-100 text-orange-600 border border-orange-600"
+                      : "border border-orange-200 text-slate-700"
                       }`}
                   >
                     Sign In
@@ -243,8 +244,8 @@ function Navbar() {
                   <Link
                     to="/signup"
                     className={`rounded-xl py-3 text-center text-sm font-semibold transition ${location.pathname === "/signup"
-                        ? "bg-orange-700 text-white shadow-md shadow-orange-300"
-                        : "bg-orange-600 text-white"
+                      ? "bg-orange-700 text-white shadow-md shadow-orange-300"
+                      : "bg-orange-600 text-white"
                       }`}
                   >
                     Sign Up

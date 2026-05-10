@@ -11,6 +11,7 @@ import type { AuthUser, SignInRequest, SignUpRequest } from "../types/auth";
 interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  isAuthReady: boolean;
   isAdmin: boolean;
   login: (data: SignInRequest) => Promise<void>;
   register: (data: SignUpRequest) => Promise<void>;
@@ -24,13 +25,21 @@ const TOKEN_KEY = "food_token";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem(STORAGE_KEY);
 
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(TOKEN_KEY);
+      }
     }
+
+    setIsAuthReady(true);
   }, []);
 
   const saveAuth = (authUser: AuthUser) => {
@@ -60,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isAuthenticated: !!user,
+        isAuthReady,
         isAdmin: user?.role === "ADMIN",
         login,
         register,
