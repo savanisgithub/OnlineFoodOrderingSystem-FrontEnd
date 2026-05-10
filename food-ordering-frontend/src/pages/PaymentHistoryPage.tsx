@@ -82,7 +82,7 @@ function PaymentHistoryPage() {
                 {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-sm font-medium !text-slate-500">
-                        Payment History & Transactions
+                        Payments & Transactions
                     </h1>
                 </div>
 
