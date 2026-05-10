@@ -5,7 +5,6 @@ import AuthLayout from "../components/layout/AuthLayout";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import { useAuth } from "../context/AuthContext";
-import type { UserRole } from "../types/auth";
 
 function SignUpPage() {
     const { register } = useAuth();
@@ -14,7 +13,6 @@ function SignUpPage() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [role, setRole] = useState<UserRole>("CUSTOMER");
     const [formError, setFormError] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -39,8 +37,15 @@ function SignUpPage() {
 
         try {
             setLoading(true);
-            await register({ name, email, password, role });
-            navigate("/signin");
+
+            await register({
+                name,
+                email,
+                password,
+                role: "CUSTOMER",
+            });
+
+            navigate("/foods");
         } catch (error) {
             const err = error as AxiosError<{ message?: string }>;
             setFormError(err.response?.data?.message || "Registration failed");
@@ -78,28 +83,19 @@ function SignUpPage() {
                         onChange={(e) => setEmail(e.target.value)}
                     />
 
-                    <Input
-                        label="Password"
-                        type="password"
-                        placeholder="Create a password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-slate-700">
-                            Account Type
-                        </label>
-
-                        <select
-                            value={role}
-                            onChange={(e) => setRole(e.target.value as UserRole)}
-                            className="w-full rounded-xl border border-orange-100 bg-white px-4 py-3 text-sm outline-none transition-all focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
-                        >
-                            <option value="CUSTOMER">Customer</option>
-                            <option value="ADMIN">Admin</option>
-                        </select>
+                    <div className="sm:col-span-2">
+                        <Input
+                            label="Password"
+                            type="password"
+                            placeholder="Create a password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
                     </div>
+                </div>
+
+                <div className="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3 text-sm text-slate-600">
+                    Your account will be created as a <b>Customer</b>.
                 </div>
 
                 <Button fullWidth type="submit" disabled={loading}>
@@ -108,7 +104,10 @@ function SignUpPage() {
 
                 <p className="text-center text-sm text-slate-500">
                     Already have an account?{" "}
-                    <Link to="/signin" className="font-bold text-orange-600 hover:text-orange-700">
+                    <Link
+                        to="/signin"
+                        className="font-bold text-orange-600 hover:text-orange-700"
+                    >
                         Sign in
                     </Link>
                 </p>

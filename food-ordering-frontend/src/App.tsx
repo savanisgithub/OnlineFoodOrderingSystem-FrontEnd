@@ -22,21 +22,24 @@ export default function App() {
 
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/foods" element={<FoodsPage />} />
+
         <Route element={<PublicRoute />}>
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/signup" element={<SignUpPage />} />
         </Route>
-        <Route path="/foods" element={<FoodsPage />} />
 
-        <Route element={<ProtectedRoute />}>
+        <Route element={<ProtectedRoute allowedRoles={["CUSTOMER"]} />}>
           <Route path="/cart" element={<CartPage />} />
           <Route path="/orders" element={<OrdersPage />} />
-          <Route path="/payments" element={<PaymentHistoryPage />} />
           <Route path="/payment/:orderId" element={<PaymentPage />} />
         </Route>
 
+        <Route element={<ProtectedRoute allowedRoles={["CUSTOMER", "ADMIN"]} />}>
+          <Route path="/payments" element={<PaymentHistoryPage />} />
+        </Route>
+
         <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-          <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/categories" element={<AdminCategoriesPage />} />
           <Route path="/admin/foods" element={<AdminFoodsPage />} />

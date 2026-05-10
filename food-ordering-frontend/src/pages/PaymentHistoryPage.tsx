@@ -1,23 +1,56 @@
-import { useEffect, useState } from "react";
-import { CreditCard, Filter, Clock, CheckCircle, XCircle } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { CheckCircle, Clock, CreditCard, Filter, XCircle } from "lucide-react";
+import { orderApi } from "../api/orderApi";
 import { paymentApi } from "../api/paymentApi";
-import type { Payment, PaymentStatus } from "../types";
+import type { Order, Payment, PaymentStatus } from "../types";
 import { useAuth } from "../context/AuthContext";
 import EmptyState from "../components/ui/EmptyState";
+import Button from "../components/ui/Button";
+
+type PaymentRecord = Payment & {
+    order?: Order;
+};
 
 function PaymentHistoryPage() {
-    const { user } = useAuth();
-    const [payments, setPayments] = useState<Payment[]>([]);
+    const { user, isAdmin } = useAuth();
+
+    const [payments, setPayments] = useState<PaymentRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [filterStatus, setFilterStatus] = useState<PaymentStatus | "ALL">("ALL");
 
     const fetchPayments = async () => {
+        if (!user) return;
+
         try {
             setLoading(true);
             setError("");
-            const data = await paymentApi.getAll();
-            setPayments(data);
+
+            if (isAdmin) {
+                const allPayments = await paymentApi.getAll();
+                setPayments(allPayments);
+                return;
+            }
+
+            const myOrders = await orderApi.getByUser(user.userId);
+
+            const paymentResults = await Promise.allSettled(
+                myOrders.map(async (order) => {
+                    const payment = await paymentApi.getByOrder(order.orderId);
+
+                    return {
+                        ...payment,
+                        order,
+                    };
+                })
+            );
+
+            const myPayments: PaymentRecord[] = paymentResults.flatMap((result) =>
+                result.status === "fulfilled" ? [result.value] : []
+            );
+
+            setPayments(myPayments);
         } catch {
             setError("Failed to load payment history.");
         } finally {
@@ -27,63 +60,56 @@ function PaymentHistoryPage() {
 
     useEffect(() => {
         fetchPayments();
-    }, [user]);
+    }, [user, isAdmin]);
 
-    const filteredPayments = filterStatus === "ALL" 
-        ? payments 
-        : payments.filter(p => p.status === filterStatus);
+    const filteredPayments = useMemo(() => {
+        if (filterStatus === "ALL") return payments;
+        return payments.filter((payment) => payment.status === filterStatus);
+    }, [payments, filterStatus]);
+
+    const totalPaid = payments
+        .filter((payment) => payment.status === "COMPLETED")
+        .reduce((sum, payment) => sum + payment.amount, 0);
+
+    const pendingCount = payments.filter(
+        (payment) => payment.status === "PENDING"
+    ).length;
 
     const getStatusIcon = (status: PaymentStatus) => {
-        switch (status) {
-            case "COMPLETED":
-                return <CheckCircle size={20} className="text-green-600" />;
-            case "PENDING":
-                return <Clock size={20} className="text-blue-600" />;
-            case "FAILED":
-                return <XCircle size={20} className="text-red-600" />;
-            default:
-                return null;
+        if (status === "COMPLETED") {
+            return <CheckCircle size={20} className="text-green-600" />;
         }
+
+        if (status === "PENDING") {
+            return <Clock size={20} className="text-blue-600" />;
+        }
+
+        return <XCircle size={20} className="text-red-600" />;
     };
 
-    const getStatusColor = (status: PaymentStatus) => {
-        switch (status) {
-            case "COMPLETED":
-                return "bg-green-50 text-green-700 border-green-100";
-            case "PENDING":
-                return "bg-blue-50 text-blue-700 border-blue-100";
-            case "FAILED":
-                return "bg-red-50 text-red-700 border-red-100";
-            default:
-                return "bg-slate-50 text-slate-700 border-slate-100";
-        }
-    };
+    const getStatusStyle = (status: PaymentStatus) => {
+        const styles: Record<PaymentStatus, string> = {
+            COMPLETED: "bg-green-50 text-green-700 border-green-100",
+            PENDING: "bg-blue-50 text-blue-700 border-blue-100",
+            FAILED: "bg-red-50 text-red-700 border-red-100",
+        };
 
-    const getStatusLabel = (status: PaymentStatus) => {
-        switch (status) {
-            case "COMPLETED":
-                return "Completed";
-            case "PENDING":
-                return "Pending";
-            case "FAILED":
-                return "Failed";
-            default:
-                return status;
-        }
+        return styles[status];
     };
-
-    const totalAmount = filteredPayments
-        .filter(p => p.status === "COMPLETED")
-        .reduce((sum, p) => sum + p.amount, 0);
 
     return (
         <main className="min-h-screen px-4">
             <div className="mx-auto max-w-5xl">
-                {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-sm font-medium !text-slate-500">
-                        Payments & Transactions
+                        {isAdmin ? "All Payments & Transactions" : "My Payments & Transactions"}
                     </h1>
+
+                    <p className="mt-2 text-sm text-slate-500">
+                        {isAdmin
+                            ? "View all payment records created in the food ordering system."
+                            : "View payment records linked only to your orders."}
+                    </p>
                 </div>
 
                 {error && (
@@ -94,64 +120,88 @@ function PaymentHistoryPage() {
 
                 {loading ? (
                     <div className="space-y-4">
-                        {Array.from({ length: 3 }).map((_, i) => (
-                            <div key={i} className="h-24 animate-pulse rounded-[2rem] bg-white" />
+                        {Array.from({ length: 3 }).map((_, index) => (
+                            <div
+                                key={index}
+                                className="h-24 animate-pulse rounded-[2rem] bg-white"
+                            />
                         ))}
                     </div>
                 ) : payments.length === 0 ? (
                     <EmptyState
                         title="No payments yet"
-                        description="Your payment history will appear here."
+                        description={
+                            isAdmin
+                                ? "No payment records have been created yet."
+                                : "Payments will appear here after you create a payment for an order."
+                        }
+                        action={
+                            !isAdmin && (
+                                <Link to="/orders">
+                                    <Button>View Orders</Button>
+                                </Link>
+                            )
+                        }
                     />
                 ) : (
                     <>
-                        {/* Summary Cards */}
                         <div className="mb-8 grid gap-4 md:grid-cols-3">
-                            {/* Total Transactions */}
                             <div className="rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm">
-                                <div className="flex items-center gap-3 mb-3">
+                                <div className="mb-3 flex items-center gap-3">
                                     <div className="rounded-lg bg-orange-50 p-2">
                                         <CreditCard size={20} className="text-orange-600" />
                                     </div>
-                                    <p className="text-xs text-slate-500 font-medium">Total Transactions</p>
+                                    <p className="text-xs font-medium text-slate-500">
+                                        {isAdmin ? "Total Transactions" : "My Transactions"}
+                                    </p>
                                 </div>
-                                <p className="text-2xl font-black text-slate-900">{payments.length}</p>
-                            </div>
 
-                            {/* Total Paid */}
-                            <div className="rounded-[1.5rem] border border-green-100 bg-white p-4 shadow-sm">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="rounded-lg bg-green-50 p-2">
-                                        <CheckCircle size={20} className="text-green-600" />
-                                    </div>
-                                    <p className="text-xs text-slate-500 font-medium">Total Paid</p>
-                                </div>
                                 <p className="text-2xl font-black text-slate-900">
-                                    LKR {totalAmount.toLocaleString()}
+                                    {payments.length}
                                 </p>
                             </div>
 
-                            {/* Pending Payments */}
+                            <div className="rounded-[1.5rem] border border-green-100 bg-white p-4 shadow-sm">
+                                <div className="mb-3 flex items-center gap-3">
+                                    <div className="rounded-lg bg-green-50 p-2">
+                                        <CheckCircle size={20} className="text-green-600" />
+                                    </div>
+
+                                    <p className="text-xs font-medium text-slate-500">
+                                        Total Paid
+                                    </p>
+                                </div>
+
+                                <p className="text-2xl font-black text-slate-900">
+                                    LKR {totalPaid.toLocaleString()}
+                                </p>
+                            </div>
+
                             <div className="rounded-[1.5rem] border border-blue-100 bg-white p-4 shadow-sm">
-                                <div className="flex items-center gap-3 mb-3">
+                                <div className="mb-3 flex items-center gap-3">
                                     <div className="rounded-lg bg-blue-50 p-2">
                                         <Clock size={20} className="text-blue-600" />
                                     </div>
-                                    <p className="text-xs text-slate-500 font-medium">Pending Payments</p>
+
+                                    <p className="text-xs font-medium text-slate-500">
+                                        Pending Payments
+                                    </p>
                                 </div>
+
                                 <p className="text-2xl font-black text-slate-900">
-                                    {payments.filter(p => p.status === "PENDING").length}
+                                    {pendingCount}
                                 </p>
                             </div>
                         </div>
 
-                        {/* Filter Section */}
-                        <div className="mb-6 flex flex-wrap gap-2 items-center">
+                        <div className="mb-6 flex flex-wrap items-center gap-2">
                             <Filter size={16} className="text-slate-500" />
-                            <span className="text-sm text-slate-600 font-medium">Filter:</span>
-                            
-                            <div className="flex flex-wrap gap-2">
-                                {(["ALL", "COMPLETED", "PENDING", "FAILED"] as const).map((status) => (
+                            <span className="text-sm font-medium text-slate-600">
+                                Filter:
+                            </span>
+
+                            {(["ALL", "COMPLETED", "PENDING", "FAILED"] as const).map(
+                                (status) => (
                                     <button
                                         key={status}
                                         onClick={() => setFilterStatus(status)}
@@ -161,70 +211,91 @@ function PaymentHistoryPage() {
                                                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                                         }`}
                                     >
-                                        {status === "ALL" ? "All" : getStatusLabel(status as PaymentStatus)}
+                                        {status === "ALL" ? "All" : status}
                                     </button>
-                                ))}
-                            </div>
+                                )
+                            )}
                         </div>
 
-                        {/* Payments List */}
                         <div className="space-y-4">
                             {filteredPayments.length === 0 ? (
                                 <div className="rounded-[2rem] border border-orange-100 bg-white p-8 text-center">
-                                    <p className="text-slate-500">No payments found with this status.</p>
+                                    <p className="text-slate-500">
+                                        No payments found with this status.
+                                    </p>
                                 </div>
                             ) : (
                                 filteredPayments.map((payment) => (
                                     <div
                                         key={payment.paymentId}
-                                        className="rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm hover:shadow-md transition"
+                                        className="rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm transition hover:shadow-md"
                                     >
                                         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                                            {/* Left: Payment Info */}
                                             <div className="flex items-start gap-4">
                                                 <div className="rounded-lg bg-orange-50 p-3">
-                                                    <CreditCard size={24} className="text-orange-600" />
+                                                    <CreditCard
+                                                        size={24}
+                                                        className="text-orange-600"
+                                                    />
                                                 </div>
 
-                                                <div className="flex-1">
+                                                <div>
                                                     <h3 className="text-base font-bold text-slate-900">
                                                         Payment #{payment.paymentId.substring(0, 8)}
                                                     </h3>
+
                                                     <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-600">
                                                         <span>
-                                                            <span className="font-medium text-slate-700">Order:</span> #{payment.orderId.substring(0, 8)}
+                                                            <b>Order:</b> #{payment.orderId.substring(0, 8)}
                                                         </span>
+
                                                         <span className="text-slate-400">•</span>
+
                                                         <span>
-                                                            <span className="font-medium text-slate-700">Method:</span> {payment.paymentMethod}
+                                                            <b>Method:</b> {payment.paymentMethod}
                                                         </span>
-                                                        <span className="text-slate-400">•</span>
-                                                        <span>
-                                                            {new Date(payment.paymentDate).toLocaleDateString("en-US", {
-                                                                year: "numeric",
-                                                                month: "short",
-                                                                day: "numeric",
-                                                                hour: "2-digit",
-                                                                minute: "2-digit",
-                                                            })}
-                                                        </span>
+
+                                                        {isAdmin && payment.order?.userName && (
+                                                            <>
+                                                                <span className="text-slate-400">•</span>
+                                                                <span>
+                                                                    <b>Customer:</b> {payment.order.userName}
+                                                                </span>
+                                                            </>
+                                                        )}
+
+                                                        {payment.paymentDate && (
+                                                            <>
+                                                                <span className="text-slate-400">•</span>
+                                                                <span>
+                                                                    {new Date(payment.paymentDate).toLocaleString()}
+                                                                </span>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Right: Amount & Status */}
-                                            <div className="flex items-end justify-between gap-4 md:flex-col md:items-end md:gap-2">
+                                            <div className="flex items-end justify-between gap-4 md:flex-col md:items-end">
                                                 <div className="text-left md:text-right">
-                                                    <p className="text-xs text-slate-500 mb-1">Amount</p>
+                                                    <p className="mb-1 text-xs text-slate-500">
+                                                        Amount
+                                                    </p>
+
                                                     <p className="text-2xl font-black text-orange-600">
                                                         LKR {payment.amount.toLocaleString()}
                                                     </p>
                                                 </div>
 
-                                                <div className={`flex items-center gap-2 rounded-full border px-3 py-1.5 ${getStatusColor(payment.status)}`}>
+                                                <div
+                                                    className={`flex items-center gap-2 rounded-full border px-3 py-1.5 ${getStatusStyle(
+                                                        payment.status
+                                                    )}`}
+                                                >
                                                     {getStatusIcon(payment.status)}
+
                                                     <span className="text-sm font-bold">
-                                                        {getStatusLabel(payment.status)}
+                                                        {payment.status}
                                                     </span>
                                                 </div>
                                             </div>

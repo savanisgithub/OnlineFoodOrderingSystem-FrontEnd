@@ -8,6 +8,7 @@ import type { Cart } from "../types";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/ui/Button";
 import EmptyState from "../components/ui/EmptyState";
+import { useCart } from "../context/CartContext";
 
 function CartPage() {
     const { user } = useAuth();
@@ -17,14 +18,18 @@ function CartPage() {
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [error, setError] = useState("");
+    const { refreshCartCount } = useCart();
 
     const fetchCart = async () => {
         if (!user) return;
 
         try {
             setLoading(true);
+            setError("");
+
             const data = await cartApi.getByUser(user.userId);
             setCart(data);
+            await refreshCartCount(user.userId);
         } catch {
             setError("Failed to load cart.");
         } finally {
@@ -49,9 +54,13 @@ function CartPage() {
     };
 
     const removeItem = async (cartItemId: string) => {
+        if (!user) return;
+
         try {
+            setError("");
             await cartApi.removeItem(cartItemId);
             await fetchCart();
+            await refreshCartCount(user.userId);
         } catch {
             setError("Failed to remove cart item.");
         }
@@ -60,9 +69,14 @@ function CartPage() {
     const clearCart = async () => {
         if (!user) return;
 
+        const confirmed = window.confirm("Are you sure you want to clear your cart?");
+        if (!confirmed) return;
+
         try {
+            setError("");
             await cartApi.clear(user.userId);
             await fetchCart();
+            await refreshCartCount(user.userId);
         } catch {
             setError("Failed to clear cart.");
         }
@@ -71,9 +85,18 @@ function CartPage() {
     const placeOrder = async () => {
         if (!user) return;
 
+        if (!cartItems.length) {
+            setError("Your cart is empty.");
+            return;
+        }
+
         try {
             setActionLoading(true);
+            setError("");
+
             await orderApi.placeOrder(user.userId);
+            await refreshCartCount(user.userId);
+
             navigate("/orders");
         } catch (error) {
             const err = error as AxiosError<{ message?: string }>;
@@ -142,7 +165,11 @@ function CartPage() {
                                     <div className="flex items-center justify-between gap-4">
                                         <div className="flex items-center rounded-full border border-orange-100 bg-orange-50 p-1">
                                             <button
-                                                onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}
+                                                onClick={() =>
+                                                    item.quantity <= 1
+                                                        ? removeItem(item.cartItemId)
+                                                        : updateQuantity(item.cartItemId, item.quantity - 1)
+                                                }
                                                 className="grid h-9 w-9 place-items-center rounded-full bg-white text-slate-700"
                                             >
                                                 <Minus size={16} />
