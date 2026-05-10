@@ -17,7 +17,7 @@ function AdminLayout({ title, subtitle, children }: AdminLayoutProps) {
         }`;
 
     return (
-        <main className="min-h-screen bg-orange-50/15 px-4 py-2">
+        <main className="min-h-screen bg-orange-50/15 px-4 py-10">
             <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[280px_1fr]">
                 <aside className="h-fit rounded-[2rem] border border-orange-100 bg-white p-4 shadow-sm lg:sticky lg:top-28">
                     <div className="mb-5 rounded-3xl bg-gradient-to-br from-orange-600 to-yellow-400 p-5 text-white">
