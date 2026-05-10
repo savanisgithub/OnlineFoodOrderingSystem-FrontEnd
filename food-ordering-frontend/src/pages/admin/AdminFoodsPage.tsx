@@ -1,4 +1,5 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
+import { ImagePlus, X } from "lucide-react";
 import { AxiosError } from "axios";
 import AdminLayout from "../../components/admin/AdminLayout";
 import Button from "../../components/ui/Button";
@@ -8,6 +9,9 @@ import StatusBadge from "../../components/ui/StatusBadge";
 import { categoryApi } from "../../api/categoryApi";
 import { foodApi } from "../../api/foodApi";
 import type { Category, FoodItem, FoodStatus } from "../../types";
+import { getBackendImageUrl } from "../../utils/imageUrl";
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
 function AdminFoodsPage() {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -19,6 +23,10 @@ function AdminFoodsPage() {
     const [price, setPrice] = useState("");
     const [status, setStatus] = useState<FoodStatus>("AVAILABLE");
     const [categoryId, setCategoryId] = useState("");
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState("");
+    const [existingImageUrl, setExistingImageUrl] = useState("");
+    const imageInputRef = useRef<HTMLInputElement | null>(null);
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -51,12 +59,29 @@ function AdminFoodsPage() {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        if (!imageFile) {
+            setImagePreview("");
+            return;
+        }
+
+        const previewUrl = URL.createObjectURL(imageFile);
+        setImagePreview(previewUrl);
+
+        return () => URL.revokeObjectURL(previewUrl);
+    }, [imageFile]);
+
     const resetForm = () => {
         setEditingFood(null);
         setFoodName("");
         setDescription("");
         setPrice("");
         setStatus("AVAILABLE");
+        setImageFile(null);
+        setExistingImageUrl("");
+        if (imageInputRef.current) {
+            imageInputRef.current.value = "";
+        }
 
         if (categories.length > 0) {
             setCategoryId(categories[0].categoryId);
@@ -70,7 +95,45 @@ function AdminFoodsPage() {
         setPrice(String(food.price));
         setStatus(food.status);
         setCategoryId(food.categoryId);
+        setImageFile(null);
+        setExistingImageUrl(food.imageUrl || "");
+        if (imageInputRef.current) {
+            imageInputRef.current.value = "";
+        }
         window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        setError("");
+
+        if (!file) {
+            setImageFile(null);
+            return;
+        }
+
+        if (!file.type.startsWith("image/")) {
+            setImageFile(null);
+            event.target.value = "";
+            setError("Please select a valid image file.");
+            return;
+        }
+
+        if (file.size > MAX_IMAGE_SIZE) {
+            setImageFile(null);
+            event.target.value = "";
+            setError("Food image must be 5MB or smaller.");
+            return;
+        }
+
+        setImageFile(file);
+    };
+
+    const clearImageSelection = () => {
+        setImageFile(null);
+        if (imageInputRef.current) {
+            imageInputRef.current.value = "";
+        }
     };
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -93,12 +156,13 @@ function AdminFoodsPage() {
             return;
         }
 
-        const payload: Partial<FoodItem> = {
+        const payload = {
             foodName,
             description,
             price: Number(price),
             status,
             categoryId,
+            image: imageFile,
         };
 
         try {
@@ -220,6 +284,53 @@ function AdminFoodsPage() {
                             <option value="OUT_OF_STOCK">Out of Stock</option>
                         </select>
                     </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                        <label className="text-sm font-semibold text-slate-700">
+                            Food Image
+                        </label>
+
+                        <div className="grid gap-4 md:grid-cols-[220px_1fr] md:items-center">
+                            <div className="h-36 overflow-hidden rounded-2xl border border-orange-100 bg-orange-50">
+                                {imagePreview || existingImageUrl ? (
+                                    <img
+                                        src={imagePreview || getBackendImageUrl(existingImageUrl)}
+                                        alt="Food preview"
+                                        className="h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="grid h-full place-items-center text-orange-500">
+                                        <ImagePlus size={42} />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-3">
+                                <input
+                                    ref={imageInputRef}
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp"
+                                    onChange={handleImageChange}
+                                    className="w-full rounded-xl border border-orange-100 bg-white px-4 py-3 text-sm outline-none file:mr-4 file:rounded-full file:border-0 file:bg-orange-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-orange-700 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                                />
+
+                                <p className="text-xs text-slate-500">
+                                    Upload JPG, PNG, or WEBP. Maximum size: 5MB.
+                                </p>
+
+                                {imagePreview && (
+                                    <button
+                                        type="button"
+                                        onClick={clearImageSelection}
+                                        className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+                                    >
+                                        <X size={16} />
+                                        Clear selected image
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="mt-5 flex flex-col gap-3 sm:flex-row">
@@ -257,6 +368,7 @@ function AdminFoodsPage() {
                             <thead>
                                 <tr className="border-b border-orange-100 text-sm text-slate-500">
                                     <th className="py-3">Food ID</th>
+                                    <th className="py-3">Image</th>
                                     <th className="py-3">Name</th>
                                     <th className="py-3">Category</th>
                                     <th className="py-3">Price</th>
@@ -273,6 +385,21 @@ function AdminFoodsPage() {
                                     >
                                         <td className="py-4 font-semibold text-slate-500">
                                             {food.foodId}
+                                        </td>
+                                        <td className="py-4">
+                                            <div className="h-14 w-20 overflow-hidden rounded-xl bg-orange-50">
+                                                {food.imageUrl ? (
+                                                    <img
+                                                        src={getBackendImageUrl(food.imageUrl)}
+                                                        alt={food.foodName}
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="grid h-full place-items-center text-orange-500">
+                                                        <ImagePlus size={22} />
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="py-4">
                                             <p className="font-black text-slate-900">

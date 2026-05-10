@@ -1,5 +1,25 @@
 import axiosInstance from "./axiosInstance";
-import type { FoodItem } from "../types";
+import type { FoodItem, FoodStatus } from "../types";
+
+export interface FoodMutationData {
+    foodName: string;
+    description?: string;
+    price: number;
+    status: FoodStatus;
+    categoryId: string;
+    image?: File | null;
+}
+
+const toFoodFormData = ({ image, ...food }: FoodMutationData) => {
+    const formData = new FormData();
+    formData.append("food", new Blob([JSON.stringify(food)], { type: "application/json" }));
+
+    if (image) {
+        formData.append("image", image);
+    }
+
+    return formData;
+};
 
 export const foodApi = {
     getAll: async () => {
@@ -17,12 +37,16 @@ export const foodApi = {
         return res.data;
     },
 
-    create: async (data: Partial<FoodItem>) => {
-        await axiosInstance.post("/foods", data);
+    create: async (data: FoodMutationData) => {
+        await axiosInstance.post("/foods", toFoodFormData(data), {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
     },
 
-    update: async (foodId: string, data: Partial<FoodItem>) => {
-        await axiosInstance.patch(`/foods/${foodId}`, data);
+    update: async (foodId: string, data: FoodMutationData) => {
+        await axiosInstance.patch(`/foods/${foodId}`, toFoodFormData(data), {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
     },
 
     remove: async (foodId: string) => {

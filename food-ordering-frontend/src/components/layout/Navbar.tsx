@@ -78,9 +78,15 @@ function Navbar() {
           )}
 
           {isAdmin && (
-            <NavLink to="/admin" className={navClass}>
-              Admin
-            </NavLink>
+            <>
+              <NavLink to="/admin" className={navClass}>
+                Admin
+              </NavLink>
+
+              <NavLink to="/payments" className={navClass}>
+                Payments
+              </NavLink>
+            </>
           )}
         </div>
 
@@ -216,7 +222,7 @@ function Navbar() {
                 </Link>
 
                 <NavLink to="/payments" className={navClass}>
-                  Payment History
+                  Payments
                 </NavLink>
               </>
             )}

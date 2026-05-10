@@ -13,6 +13,7 @@ export interface FoodItem {
     foodName: string;
     description?: string;
     price: number;
+    imageUrl?: string;
     status: FoodStatus;
     categoryId: string;
     categoryName?: string;

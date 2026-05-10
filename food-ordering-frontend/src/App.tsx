@@ -10,7 +10,10 @@ import CartPage from "./pages/CartPage";
 import OrdersPage from "./pages/OrdersPage";
 import PaymentPage from "./pages/PaymentPage";
 import PaymentHistoryPage from "./pages/PaymentHistoryPage";
-import AdminDashboardPage from "./pages/AdminDashboardPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
+import AdminFoodsPage from "./pages/admin/AdminFoodsPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
 
 export default function App() {
   return (
@@ -34,6 +37,10 @@ export default function App() {
 
         <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
           <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/categories" element={<AdminCategoriesPage />} />
+          <Route path="/admin/foods" element={<AdminFoodsPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

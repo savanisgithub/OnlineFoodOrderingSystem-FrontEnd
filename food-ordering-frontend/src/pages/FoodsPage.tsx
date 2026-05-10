@@ -10,6 +10,7 @@ import { useCart } from "../context/CartContext";
 import Button from "../components/ui/Button";
 import StatusBadge from "../components/ui/StatusBadge";
 import EmptyState from "../components/ui/EmptyState";
+import { getBackendImageUrl } from "../utils/imageUrl";
 
 function FoodsPage() {
     const { user, isAuthenticated } = useAuth();
@@ -169,10 +170,20 @@ function FoodsPage() {
                                 key={food.foodId}
                                 className="group overflow-hidden rounded-[2rem] border border-orange-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-orange-100"
                             >
-                                <div className="h-44 bg-gradient-to-br from-orange-100 to-yellow-100 p-6">
-                                    <div className="grid h-full place-items-center rounded-[1.5rem] bg-white/60">
-                                        <span className="text-6xl">🍽️</span>
-                                    </div>
+                                <div className="h-44 bg-gradient-to-br from-orange-100 to-yellow-100">
+                                    {food.imageUrl ? (
+                                        <img
+                                            src={getBackendImageUrl(food.imageUrl)}
+                                            alt={food.foodName}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="grid h-full place-items-center p-6">
+                                            <div className="grid h-full w-full place-items-center rounded-[1.5rem] bg-white/60">
+                                                <span className="text-6xl">🍽️</span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="p-5">
