@@ -20,17 +20,6 @@ function Banner() {
                     Browse tasty meals, add them to your cart, place orders, and track
                     everything through a clean food ordering experience.
                 </p>
-
-                <div className="mt-4 flex flex-col justify-center gap-3 sm:flex-row">
-                    <Link to="/foods">
-                        <Button>
-                            Browse Foods <ArrowRight className="ml-2" size={18} />
-                        </Button>
-                    </Link>
-                    <Link to="/signup">
-                        <Button variant="secondary">Create Account</Button>
-                    </Link>
-                </div>
             </div>
 
             <div className="relative z-10">
